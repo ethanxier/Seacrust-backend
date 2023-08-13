@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"os"
+	"seacrust-backend/src/models"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func Init(db *gorm.DB) *handler {
 	// CORS
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS", "PUT"}
 	config.AllowHeaders = []string{"Authorization", "Content-Type"}
 	config.AllowCredentials = true
 	rest.http.Use(cors.New(config))
@@ -34,6 +35,33 @@ func Init(db *gorm.DB) *handler {
 	rest.registerRoutes()
 
 	return &rest
+}
+
+func (h *handler) SeedCategory(sql *gorm.DB) error {
+	var categories []models.Category
+
+	if err := sql.First(&categories).Error; err != gorm.ErrRecordNotFound {
+		return err
+	}
+	categories = []models.Category{
+		{
+			Name: models.Konsumen,
+		},
+		{
+			Name: models.Tengkulak,
+		},
+		{
+			Name: models.Pembudidaya,
+		},
+		{
+			Name: models.NelayanTangkap,
+		},
+	}
+
+	if err := sql.Create(&categories).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (h *handler) Run() {
@@ -51,4 +79,7 @@ func (h *handler) registerRoutes() {
 	api.GET("/profile", h.userGetProfile)
 	api.GET("/navbar", h.userGetNavbar)
 	api.GET("/user/profile", h.userGetProfile)
+	api.PUT("/user/profile/update", h.userUpdateProfile)
+
+	api.GET("/product/:category", h.getProductByCategory)
 }

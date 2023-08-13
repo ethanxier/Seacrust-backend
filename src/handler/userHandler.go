@@ -61,7 +61,7 @@ func (h *handler) userLogin(ctx *gin.Context) {
 	if err := h.db.Where("email = ?", userBody.Email).First(&userDB).Error; err != nil {
 
 		if err := h.db.Where("username = ?", userBody.Email).First(&userDB).Error; err != nil {
-			h.ErrorResponse(ctx, http.StatusBadRequest, "invalid username or password", nil)
+			h.ErrorResponse(ctx, http.StatusBadRequest, "account notfound", nil)
 			return
 		}
 
@@ -149,4 +149,43 @@ func (h *handler) userGetNavbar(ctx *gin.Context) {
 	}
 
 	h.SuccessResponse(ctx, http.StatusOK, "Succes", userRes)
+}
+
+func (h *handler) userUpdateProfile(ctx *gin.Context) {
+	var userBody models.UserUpdateProfile
+	if err := h.BindBody(ctx, &userBody); err != nil {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "data tidak diterima", nil)
+		return
+	}
+
+	user, exist := ctx.Get("user")
+	if !exist {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "Unauthorized", nil)
+		return
+	}
+
+	claims, ok := user.(models.UserClaims)
+	if !ok {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "invalid token", nil)
+		return
+	}
+
+	userID := claims.ID
+
+	var userDB models.User
+
+	if err := h.db.Model(&userDB).Where("id = ?", userID).First(&userDB).Updates(models.User{
+		FullName:     userBody.FullName,
+		Domisili:     userBody.Domisili,
+		TanggalLahir: userBody.TanggalLahir,
+		JenisKelamin: userBody.JenisKelamin,
+		Deskripsi:    userBody.Deskripsi,
+		ProfilePhoto: userBody.ProfilePhoto,
+		NoWhatsapp:   userBody.NoWhatsapp,
+	}).Error; err != nil {
+		h.ErrorResponse(ctx, http.StatusInternalServerError, "error sini", nil)
+		return
+	}
+
+	h.SuccessResponse(ctx, http.StatusOK, "Update berhasil", nil)
 }

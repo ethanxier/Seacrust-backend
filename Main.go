@@ -35,7 +35,18 @@ func main() {
 	}
 
 	database.AutoMigrate(models.User{})
+	database.AutoMigrate(models.Category{})
+	database.AutoMigrate(models.Toko{})
+	database.AutoMigrate(models.Produk{})
+	database.AutoMigrate(models.Address{})
+	database.AutoMigrate(models.Pesanan{})
 
 	handler := handler.Init(database)
+
+	if err := handler.SeedCategory(database); err != nil {
+		fmt.Println(err)
+		panic("GAGAL SEED Category")
+	}
+
 	handler.Run()
 }
