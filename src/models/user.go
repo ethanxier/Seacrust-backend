@@ -54,7 +54,6 @@ type UserProfilePage struct {
 type UserUpdateProfile struct {
 	FullName     string `json:"full_name"`
 	Domisili     string `json:"domisili"`
-	ProfilePhoto string `json:"profile_photo"`
 	Deskripsi    string `json:"deskripsi"`
 	TanggalLahir string `json:"tanggal_lahir"`
 	NoWhatsapp   string `json:"no_whatsapp"`

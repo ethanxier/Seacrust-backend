@@ -5,20 +5,23 @@ import (
 	"os"
 	"seacrust-backend/src/models"
 
+	supabasestorageuploader "github.com/adityarizkyramadhan/supabase-storage-uploader"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 type handler struct {
-	http *gin.Engine
-	db   *gorm.DB
+	http      *gin.Engine
+	db        *gorm.DB
+	supClient supabasestorageuploader.SupabaseClientService
 }
 
-func Init(db *gorm.DB) *handler {
+func Init(db *gorm.DB, supClient supabasestorageuploader.SupabaseClientService) *handler {
 	rest := handler{
-		http: gin.New(),
-		db:   db,
+		http:      gin.New(),
+		db:        db,
+		supClient: supClient,
 	}
 
 	// CORS
@@ -80,6 +83,9 @@ func (h *handler) registerRoutes() {
 	api.GET("/navbar", h.userGetNavbar)
 	api.GET("/user/profile", h.userGetProfile)
 	api.PUT("/user/profile/update", h.userUpdateProfile)
+	api.PUT("/user/profile/update/photo", h.userUpdatePhotoProfile)
+	api.GET("/user/toko", h.getMyToko)
+	api.POST("/user/toko/regis", h.tokoRegistrasi)
 
 	api.GET("/product/:category", h.getProductByCategory)
 }

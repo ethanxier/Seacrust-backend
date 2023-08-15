@@ -79,7 +79,6 @@ func (h *handler) userLogin(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Header("Authorization", "Bearer "+tokenJwt)
 	h.SuccessResponse(ctx, http.StatusOK, "Login Successfull", gin.H{
 		"token": tokenJwt,
 	})
@@ -145,7 +144,7 @@ func (h *handler) userGetNavbar(ctx *gin.Context) {
 
 	userRes := models.UserNavbar{
 		FullName:     userDB.FullName,
-		ProfilePhoto: "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
+		ProfilePhoto: userDB.ProfilePhoto,
 	}
 
 	h.SuccessResponse(ctx, http.StatusOK, "Succes", userRes)
@@ -180,8 +179,46 @@ func (h *handler) userUpdateProfile(ctx *gin.Context) {
 		TanggalLahir: userBody.TanggalLahir,
 		JenisKelamin: userBody.JenisKelamin,
 		Deskripsi:    userBody.Deskripsi,
-		ProfilePhoto: userBody.ProfilePhoto,
 		NoWhatsapp:   userBody.NoWhatsapp,
+	}).Error; err != nil {
+		h.ErrorResponse(ctx, http.StatusInternalServerError, "error sini", nil)
+		return
+	}
+
+	h.SuccessResponse(ctx, http.StatusOK, "Update berhasil", nil)
+}
+
+func (h *handler) userUpdatePhotoProfile(ctx *gin.Context) {
+	file, err := ctx.FormFile("foto")
+	if err != nil {
+		h.ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	link, err := h.supClient.Upload(file)
+	if err != nil {
+		h.ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	user, exist := ctx.Get("user")
+	if !exist {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "Unauthorized", nil)
+		return
+	}
+
+	claims, ok := user.(models.UserClaims)
+	if !ok {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "invalid token", nil)
+		return
+	}
+
+	userID := claims.ID
+
+	var userDB models.User
+
+	if err := h.db.Model(&userDB).Where("id = ?", userID).First(&userDB).Updates(models.User{
+		ProfilePhoto: link,
 	}).Error; err != nil {
 		h.ErrorResponse(ctx, http.StatusInternalServerError, "error sini", nil)
 		return
