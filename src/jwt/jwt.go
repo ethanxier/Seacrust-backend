@@ -27,6 +27,24 @@ func GenerateToken(user models.User) (string, error) {
 	return tokenJwtReal, nil
 }
 
+func GenerateTokenAdmin(payload models.AdminLogin) (string, error) {
+
+	expStr := os.Getenv("JWT_EXP")
+	var exp time.Duration
+	exp, err := time.ParseDuration(expStr)
+	if expStr == "" || err != nil {
+		exp = time.Hour * 1
+	}
+
+	tokenJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, models.NewAdminClaims(payload.Key, exp))
+	tokenJwtReal, err := tokenJWT.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenJwtReal, nil
+}
+
 func DecodeToken(signedToken string, ptrClaims jwt.Claims, KEY string) error {
 
 	token, err := jwt.ParseWithClaims(signedToken, ptrClaims, func(t *jwt.Token) (interface{}, error) {

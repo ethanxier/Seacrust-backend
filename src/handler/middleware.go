@@ -42,3 +42,26 @@ func JwtMiddleware() gin.HandlerFunc {
 		c.Set("user", claims)
 	}
 }
+
+func JwtMiddlewareAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authorization := c.GetHeader("Authorization")
+		if !strings.HasPrefix(authorization, "Bearer ") {
+			ErrorResponse(c, http.StatusUnauthorized, "UnauthorizedJWT1Admin", nil)
+			c.Abort()
+			return
+		}
+
+		tokenJwt := authorization[7:]
+		claims := models.AdminClaims{}
+		jwtKey := os.Getenv("SECRET_KEY")
+
+		if err := jwt.DecodeToken(tokenJwt, &claims, jwtKey); err != nil {
+			ErrorResponse(c, http.StatusUnauthorized, "Unauthorized2", nil)
+			c.Abort()
+			return
+		}
+
+		c.Set("admin", claims)
+	}
+}

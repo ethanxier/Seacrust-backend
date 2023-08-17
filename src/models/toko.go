@@ -29,7 +29,18 @@ type TokoRegistrasi struct {
 }
 
 type GetToko struct {
-	Name   string   `json:"name" gorm:"type:VARCHAR(255);NOT NULL"`
-	Produk []Produk `json:"produk"`
-	Alamat string   `json:"alamat" gorm:"type:VARCHAR(20);UNIQUE"`
+	Name     string   `json:"name" gorm:"type:VARCHAR(255);NOT NULL"`
+	Produk   []Produk `json:"produk"`
+	Alamat   string   `json:"alamat" gorm:"type:VARCHAR(20);UNIQUE"`
+	IsActive bool     `json:"is_active"`
+}
+
+type GetUnverifiedToko struct {
+	UserFullName     string `json:"user_fullname"`
+	UserTanggalLahir string `json:"user_tanggallahir"`
+	UserDeskripsi    string `json:"user_deskripsi"`
+	UserFoto         string `json:"user_foto"`
+	NamaToko         string `json:"nama_toko"`
+	AlamatToko       string `json:"alamat_toko"`
+	IDToko           uint   `json:"id_toko"`
 }

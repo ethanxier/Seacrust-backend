@@ -73,8 +73,14 @@ func (h *handler) Run() {
 
 func (h *handler) registerRoutes() {
 	api := h.http.Group("/api")
+	admin := h.http.Group("/admin")
 
 	api.Use(JwtMiddleware())
+	admin.Use(JwtMiddlewareAdmin())
+
+	h.http.POST("/admin/login", h.adminLogin)
+	admin.GET("verif/toko", h.getAllUnverifiedToko)
+	admin.PUT("verif/toko/:id", h.setVerifToko)
 
 	h.http.POST("/user/register", h.userRegister)
 	h.http.POST("/user/login", h.userLogin)
