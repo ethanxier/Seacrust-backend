@@ -80,7 +80,9 @@ func (h *handler) registerRoutes() {
 
 	h.http.POST("/admin/login", h.adminLogin)
 	admin.GET("verif/toko", h.getAllUnverifiedToko)
+	admin.GET("verif/produk", h.getAllUnverifiedProduct)
 	admin.PUT("verif/toko/:id", h.setVerifToko)
+	admin.PUT("verif/produk/:id", h.setVerifProduk)
 
 	h.http.POST("/user/register", h.userRegister)
 	h.http.POST("/user/login", h.userLogin)
@@ -92,6 +94,7 @@ func (h *handler) registerRoutes() {
 	api.PUT("/user/profile/update/photo", h.userUpdatePhotoProfile)
 	api.GET("/user/toko", h.getMyToko)
 	api.POST("/user/toko/regis", h.tokoRegistrasi)
+	api.POST("/user/toko/create-product", h.createProduct)
 
 	api.GET("/product/:category", h.getProductByCategory)
 }

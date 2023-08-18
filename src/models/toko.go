@@ -29,10 +29,10 @@ type TokoRegistrasi struct {
 }
 
 type GetToko struct {
-	Name     string   `json:"name" gorm:"type:VARCHAR(255);NOT NULL"`
-	Produk   []Produk `json:"produk"`
-	Alamat   string   `json:"alamat" gorm:"type:VARCHAR(20);UNIQUE"`
-	IsActive bool     `json:"is_active"`
+	Name     string       `json:"name" gorm:"type:VARCHAR(255);NOT NULL"`
+	Produk   []ProdukResp `json:"produk"`
+	Alamat   string       `json:"alamat" gorm:"type:VARCHAR(20);UNIQUE"`
+	IsActive bool         `json:"is_active"`
 }
 
 type GetUnverifiedToko struct {

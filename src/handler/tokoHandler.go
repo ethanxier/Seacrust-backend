@@ -72,16 +72,26 @@ func (h *handler) getMyToko(ctx *gin.Context) {
 	}
 
 	var produkDB []models.Produk
-	err2 := h.db.Where("toko_id = ?", tokoDB.ID).Take(&produkDB).Error
+	err2 := h.db.Where("toko_id = ?", tokoDB.ID).Find(&produkDB).Error
 	if err2 != nil {
-		// h.ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
-		// return
 		produkDB = nil
+	}
+
+	var produkResp []models.ProdukResp
+	for _, produk := range produkDB {
+		produkResp = append(produkResp, models.ProdukResp{
+			Name:       produk.Name,
+			Foto:       produk.Foto,
+			Harga:      produk.Harga,
+			Deskripsi:  produk.Deskripsi,
+			ID:         produk.ID,
+			IsVerified: produk.IsVerified,
+		})
 	}
 
 	tokoResp := models.GetToko{
 		Name:     tokoDB.Name,
-		Produk:   produkDB,
+		Produk:   produkResp,
 		Alamat:   tokoDB.Alamat,
 		IsActive: tokoDB.IsActive,
 	}
@@ -132,7 +142,6 @@ func (h *handler) setVerifToko(ctx *gin.Context) {
 		h.ErrorResponse(ctx, http.StatusBadRequest, "failed to bind body", nil)
 		return
 	}
-	fmt.Println(IDParam.ID)
 
 	tokoDB := models.Toko{}
 	if err := h.db.Model(&tokoDB).Where("id = ?", IDParam.ID).First(&tokoDB).Updates(models.Toko{
