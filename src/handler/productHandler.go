@@ -8,36 +8,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *handler) getProductByCategory(ctx *gin.Context) {
-	var kategori string
+func (h *handler) getAllProductByCategory(ctx *gin.Context) {
+	var kategori struct {
+		ID uint `uri:"category_id"`
+	}
 	if err := h.BindParam(ctx, &kategori); err != nil {
 		h.ErrorResponse(ctx, http.StatusBadRequest, "failed to bind body", nil)
 		return
-	}
-
-	var kategoriID uint
-	switch kategori {
-	case "konsumen":
-		kategoriID = 1
-	case "tengkulak":
-		kategoriID = 2
-	case "pembudidaya":
-		kategoriID = 3
-	case "nelayan tangkap":
-		kategoriID = 4
-	default:
-		kategoriID = 0
 	}
 
 	var produkDB []models.Produk
 
 	db := h.db.Model(models.Produk{})
 
-	if kategoriID != 0 {
-		db = db.Where("kategori_id = ?", kategoriID)
+	if kategori.ID > 0 {
+		_ = db.Where("category_id = ?", kategori.ID)
 	}
 
-	if err := db.Find(&produkDB).Error; err != nil {
+	if err := db.Where("is_verified = ?", true).Find(&produkDB).Error; err != nil {
 		h.ErrorResponse(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
@@ -46,11 +34,19 @@ func (h *handler) getProductByCategory(ctx *gin.Context) {
 	for _, prd := range produkDB {
 		var produk models.ProdukResp
 
+		var tokoDB models.Toko
+		err := h.db.Where("id = ?", prd.TokoID).Take(&tokoDB).Error
+		if err != nil {
+			h.ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+			return
+		}
+
 		produk.ID = prd.ID
 		produk.Foto = prd.Foto
 		produk.Name = prd.Name
 		produk.Deskripsi = prd.Deskripsi
 		produk.Harga = prd.Harga
+		produk.DomisiliToko = tokoDB.Kota
 
 		produkResp = append(produkResp, produk)
 	}
@@ -173,7 +169,7 @@ func (h *handler) setVerifProduk(ctx *gin.Context) {
 	}
 
 	if err := h.BindParam(ctx, &IDParam); err != nil {
-		h.ErrorResponse(ctx, http.StatusBadRequest, "failed to bind body", nil)
+		h.ErrorResponse(ctx, http.StatusBadRequest, "failed to bind param", nil)
 		return
 	}
 
@@ -186,4 +182,94 @@ func (h *handler) setVerifProduk(ctx *gin.Context) {
 	}
 
 	h.SuccessResponse(ctx, http.StatusOK, "Succes", nil)
+}
+
+func (h *handler) getProductByID(ctx *gin.Context) {
+	var produkReq struct {
+		ID uint `uri:"id"`
+	}
+
+	if err := h.BindParam(ctx, &produkReq); err != nil {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "failed to bind param", nil)
+		return
+	}
+
+	var produkDB models.Produk
+
+	db := h.db.Model(models.Produk{})
+
+	if produkReq.ID > 0 {
+		_ = db.Where("id = ?", produkReq.ID)
+	}
+
+	if err := db.Where("is_verified = ?", true).First(&produkDB).Error; err != nil {
+		h.ErrorResponse(ctx, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	var produkResp models.ProdukDetailResp
+
+	var tokoDB models.Toko
+	err := h.db.Where("id = ?", produkDB.TokoID).First(&tokoDB).Error
+	if err != nil {
+		h.ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	produkResp.ID = produkDB.ID
+	produkResp.Foto = produkDB.Foto
+	produkResp.Name = produkDB.Name
+	produkResp.Deskripsi = produkDB.Deskripsi
+	produkResp.Harga = produkDB.Harga
+	produkResp.NamaToko = tokoDB.Name
+	produkResp.Terjual = produkDB.Terjual
+	produkResp.Stok = produkDB.Stok
+
+	h.SuccessResponse(ctx, http.StatusOK, "Success", produkResp)
+}
+
+func (h *handler) getAllProductBySearchKey(ctx *gin.Context) {
+	var KeyWord struct {
+		Key string `uri:"key"`
+	}
+	if err := h.BindParam(ctx, &KeyWord); err != nil {
+		h.ErrorResponse(ctx, http.StatusBadRequest, "failed to bind route parameter", nil)
+		return
+	}
+
+	var produkDB []models.Produk
+
+	db := h.db.Model(models.Produk{})
+
+	if KeyWord.Key != "" {
+		db = db.Where("name LIKE ?", "%"+KeyWord.Key+"%")
+	}
+
+	if err := db.Where("is_verified = ?", true).Find(&produkDB).Error; err != nil {
+		h.ErrorResponse(ctx, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	var produkResp []models.ProdukResp
+	for _, prd := range produkDB {
+		var produk models.ProdukResp
+
+		var tokoDB models.Toko
+		err := h.db.Where("id = ?", prd.TokoID).Take(&tokoDB).Error
+		if err != nil {
+			h.ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+			return
+		}
+
+		produk.ID = prd.ID
+		produk.Foto = prd.Foto
+		produk.Name = prd.Name
+		produk.Deskripsi = prd.Deskripsi
+		produk.Harga = prd.Harga
+		produk.DomisiliToko = tokoDB.Kota
+
+		produkResp = append(produkResp, produk)
+	}
+
+	h.SuccessResponse(ctx, http.StatusOK, "Success", produkResp)
 }

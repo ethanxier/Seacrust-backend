@@ -95,6 +95,17 @@ func (h *handler) registerRoutes() {
 	api.GET("/user/toko", h.getMyToko)
 	api.POST("/user/toko/regis", h.tokoRegistrasi)
 	api.POST("/user/toko/create-product", h.createProduct)
+	api.GET("user/my-order", h.getAllUserOrder)
+	api.GET("user/my-history", h.getAllMyHistoryOrder)
 
-	api.GET("/product/:category", h.getProductByCategory)
+	h.http.GET("/produk/:category_id", h.getAllProductByCategory)
+	h.http.GET("/produk/search/:key", h.getAllProductBySearchKey)
+	api.GET("/produk/detail/:id", h.getProductByID)
+	api.PUT("/produk/direct-cart", h.updateDirectCart)
+	api.GET("/produk/direct-cart", h.getDirectCard)
+	// api.POST("/produk/checkout/:id", h.checkOutProduk)
+
+	api.POST("/user/address/add", h.addAddress)
+	api.GET("user/address/get", h.getAllAddressUser)
+
 }

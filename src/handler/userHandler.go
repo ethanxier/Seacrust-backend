@@ -45,6 +45,15 @@ func (h *handler) userRegister(ctx *gin.Context) {
 		return
 	}
 
+	var directCardDB models.DirectCard
+	directCardDB.UserID = userDB.ID
+
+	if err := h.db.Create(&directCardDB).Error; err != nil {
+		h.ErrorResponse(ctx, http.StatusInternalServerError, "Username or Email has already been used", nil)
+		fmt.Println(err)
+		return
+	}
+
 	h.SuccessResponse(ctx, http.StatusOK, "Registration successful", nil)
 }
 
@@ -107,6 +116,7 @@ func (h *handler) userGetProfile(ctx *gin.Context) {
 	}
 
 	userResp := models.UserProfilePage{
+		Username:     userDB.Username,
 		Email:        userDB.Email,
 		FullName:     userDB.FullName,
 		ProfilePhoto: userDB.ProfilePhoto,
@@ -143,7 +153,7 @@ func (h *handler) userGetNavbar(ctx *gin.Context) {
 	}
 
 	userRes := models.UserNavbar{
-		FullName:     userDB.FullName,
+		Username:     userDB.Username,
 		ProfilePhoto: userDB.ProfilePhoto,
 	}
 

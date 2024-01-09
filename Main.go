@@ -36,9 +36,11 @@ func main() {
 		config.Get("DB_PORT"),
 		config.Get("DB_DATABASE"),
 	)
+
 	database, err := gorm.Open(mysql.Open(dbParams), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
+
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -48,7 +50,8 @@ func main() {
 	database.AutoMigrate(models.Toko{})
 	database.AutoMigrate(models.Produk{})
 	database.AutoMigrate(models.Address{})
-	database.AutoMigrate(models.Pesanan{})
+	database.AutoMigrate(models.Order{})
+	database.AutoMigrate(models.DirectCard{})
 
 	handler := handler.Init(database, supClient)
 

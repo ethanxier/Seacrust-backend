@@ -6,8 +6,12 @@ type Address struct {
 	gorm.Model
 	User         User `gorm:"foreignkey:UserID"`
 	UserID       uint
-	Namapenerima string `json:"nama_penerima" gorm:"type:VARCHAR(255)"`
-	Nomorhp      string `json:"nomor_hp" gorm:"type:VARCHAR(255)"`
-	Kota         string `json:"kota" gorm:"type:VARCHAR(255)"`
-	Alamat       string `json:"alamat" gorm:"type:VARCHAR(255)"`
+	NamaPenerima string `json:"nama_penerima" gorm:"type:VARCHAR(255)"`
+	NomorHP      string `json:"nomor_hp"`
+	Alamat       string `json:"alamat"`
+	Provinsi     string `json:"provinsi"`
+	Kota         string `json:"kota"`
+	Kecamatan    string `json:"kecamatan"`
+	Desa         string `json:"desa"`
+	KodePos      string `json:"kode_pos"`
 }
